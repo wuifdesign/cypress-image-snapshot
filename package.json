@@ -52,5 +52,11 @@
   },
   "peerDependencies": {
     "cypress": ">=4.5.0"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/example/",
+      "<rootDir>/node_modules/"
+    ]
   }
 }

@@ -1,13 +1,19 @@
 /// <reference types="cypress" />
 import { MATCH, RECORD } from './constants'
+import { MatchImageSnapshotOptions } from 'jest-image-snapshot'
 
 const screenshotsFolder = Cypress.config('screenshotsFolder')
 const updateSnapshots = Cypress.env('updateSnapshots') || false
 const failOnSnapshotDiff = typeof Cypress.env('failOnSnapshotDiff') === 'undefined'
 
-export type MatchImageSnapshotCommandOptionsType = Partial<
-  Cypress.Loggable & Cypress.Timeoutable & Cypress.ScreenshotOptions
->
+export type ImageSnapshotOptions = {
+  sizes: [number, number][]
+}
+
+export type MatchImageSnapshotCommandOptionsType =
+  | ImageSnapshotOptions &
+      MatchImageSnapshotOptions &
+      Partial<Cypress.Loggable & Cypress.Timeoutable & Cypress.ScreenshotOptions>
 
 export function matchImageSnapshotCommand(defaultOptions: MatchImageSnapshotCommandOptionsType) {
   return function matchImageSnapshot(
@@ -64,9 +70,7 @@ export function addMatchImageSnapshotCommand(
   const name = typeof maybeName === 'string' ? maybeName : 'matchImageSnapshot'
   Cypress.Commands.add(
     name,
-    {
-      prevSubject: ['optional', 'element', 'window', 'document']
-    },
+    { prevSubject: ['optional', 'element', 'window', 'document'] },
     matchImageSnapshotCommand(options as MatchImageSnapshotCommandOptionsType)
   )
 }

@@ -1,12 +1,9 @@
-/// <reference types="cypress" />
-import { MatchImageSnapshotOptions } from 'jest-image-snapshot';
-declare type ScreenshotOptions = Cypress.ScreenshotOptions;
-export declare type MatchImageSnapshotOptionsType = ScreenshotOptions & MatchImageSnapshotOptions;
+import { MatchImageSnapshotCommandOptionsType } from './command';
 declare global {
     namespace Cypress {
         interface Chainable {
-            matchImageSnapshot(nameOrOptions?: string | MatchImageSnapshotOptionsType): void;
-            matchImageSnapshot(name: string, options: MatchImageSnapshotOptionsType): void;
+            matchImageSnapshot(nameOrOptions?: string | MatchImageSnapshotCommandOptionsType): void;
+            matchImageSnapshot(name: string, options: MatchImageSnapshotCommandOptionsType): void;
         }
     }
 }

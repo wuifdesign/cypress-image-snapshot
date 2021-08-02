@@ -1,12 +1,79 @@
 # Cypress Image Snapshot
 
-Cypress Image Snapshot binds [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot)'s image diffing logic to [Cypress.io](https://cypress.io) commands. **The goal is to catch visual regressions during integration tests.**
+Cypress Image Snapshot binds [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot) image diffing logic to [Cypress.io](https://cypress.io) commands. **The goal is to catch visual regressions during integration tests.**
+
+### Installation
+
+```
+npm i @wuifdesign/cypress-image-snapshot --save
+
+yarn add @wuifdesign/cypress-image-snapshot
+```
 
 ### Cypress GUI
 
 When using `cypress open`, errors are displayed in the GUI.
 
 <img width="500px" src="https://user-images.githubusercontent.com/4060187/41942389-5a6705ae-796d-11e8-8003-fadbf7ccf43d.gif" alt="Cypress Image Snapshot in action"/>
+
+### Only Run Screenshot in Headless
+
+**For best results you should only take screenshot in headless mode. Otherwise, your client system (screen resolution) will influence the size of screenshot.**
+
+#### Disable Screenshots for `cypress open`
+
+Edit `support/commands.ts` file and add following to disable screenshots for `cypress open`.
+
+```
+
+Cypress.Commands.overwrite('screenshot', (originalFn, subject, name, options) => {
+  if (Cypress.browser.isHeadless) {
+    return originalFn(subject, name, options)
+  }
+  return cy.log('No screenshot taken when headed')
+})
+
+```
+
+#### Increase Browser Size for Headless Browsers
+
+Edit `plugins/index.ts` file and add following to start headless browsers with increased resolution.
+
+```
+module.exports = (on: PluginEvents, config: PluginConfigOptions) => {
+  on('before:browser:launch', (browser, launchOptions) => {
+    console.log('launching browser "%s" is headless? %s', browser.name, browser.isHeadless)
+
+    const width = 1920
+    const height = 1080
+
+    console.log('setting the browser window size to %d x %d', width, height)
+
+    if (browser.name === 'chrome' && browser.isHeadless) {
+      launchOptions.args.push(`--window-size=${width},${height}`)
+
+      // force screen to be non-retina and just use our given resolution
+      launchOptions.args.push('--force-device-scale-factor=1')
+      launchOptions.args.push('--cast-initial-screen-width=1600')
+      launchOptions.args.push('--cast-initial-screen-height=900')
+    }
+
+    if (browser.name === 'electron' && browser.isHeadless) {
+      // might not work on CI for some reason
+      launchOptions.preferences.width = width
+      launchOptions.preferences.height = height
+    }
+
+    if (browser.name === 'firefox' && browser.isHeadless) {
+      launchOptions.args.push(`--width=${width}`)
+      launchOptions.args.push(`--height=${height}`)
+    }
+
+    // IMPORTANT: return the updated browser launch options
+    return launchOptions
+  })
+}
+```
 
 ### Composite Image Diff
 
