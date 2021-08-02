@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { diffImageToSnapshot } from 'jest-image-snapshot/src/diff-snapshot'
 import { matchImageSnapshotOptions, matchImageSnapshotPlugin } from '../src/plugin'
 import * as path from 'path'
@@ -22,7 +23,7 @@ describe('plugin', () => {
       updateSnapshots: true
     }
 
-    matchImageSnapshotOptions(options)()
+    matchImageSnapshotOptions()(options)
 
     const result = matchImageSnapshotPlugin({
       path: '/cypress/screenshots/path/to/cheese'

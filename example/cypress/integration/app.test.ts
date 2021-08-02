@@ -1,14 +1,15 @@
+/// <reference types="cypress" />
+/// <reference types="@wuifdesign/cypress-image-snapshot" />
+
 describe('App', () => {
-  it('should render on desktop', () => {
-    cy.visit('http://localhost:3000');
+  it('should render', () => {
+    cy.visit('http://localhost:3000')
+    cy.matchImageSnapshot()
+  })
+  it('should render logo', () => {
+    cy.visit('http://localhost:3000')
+    cy.get('.App-logo').matchImageSnapshot({ blackout: [] })
+  })
+})
 
-    cy.matchImageSnapshot();
-  });
-
-  it('should render on mobile', () => {
-    cy.visit('http://localhost:3000');
-
-    cy.viewport(375, 812);
-    cy.matchImageSnapshot('mobile/app');
-  });
-});
+export {}

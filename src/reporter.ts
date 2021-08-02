@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import { cachePath } from './plugin'
 import { Runner } from 'mocha'
 
-function fallback() {
+const fallback = () => {
   // do nothing
 }
 

@@ -8,8 +8,7 @@
     ],
     "types": [
       "cypress",
-      "@wuifdesign/cypress-image-snapshot",
-      "node"
+      "@wuifdesign/cypress-image-snapshot"
     ],
     "allowJs": true,
     "skipLibCheck": true,

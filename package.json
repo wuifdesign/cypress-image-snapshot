@@ -17,13 +17,14 @@
     "clear-dist": "rimraf ./dist",
     "babel": "babel --extensions .ts src --out-dir ./dist",
     "ts-declaration": "tsc src/index.ts --declaration --emitDeclarationOnly --jsx react --esModuleInterop --outDir dist --skipLibCheck",
-    "test": "jest",
-    "lint": "eslint src"
+    "test": "npm run test:unit && npm run test:lint",
+    "test:unit": "jest",
+    "test:lint": "eslint src",
+    "prepare": "husky install"
   },
   "dependencies": {
     "chalk": "^4.1.2",
     "fs-extra": "^10.0.0",
-    "glob": "^7.1.7",
     "jest-image-snapshot": "4.5.1",
     "pkg-dir": "^5.0.0",
     "term-img": "^6.0.0"
@@ -45,6 +46,7 @@
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.1",
     "jest": "^27.0.6",
     "prettier": "2.3.2",
     "rimraf": "^3.0.2",

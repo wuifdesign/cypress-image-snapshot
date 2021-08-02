@@ -6,7 +6,6 @@ import { MATCH, RECORD } from './constants'
 // @ts-ignore
 import { diffImageToSnapshot } from 'jest-image-snapshot/src/diff-snapshot'
 
-type ScreenshotDetails = Cypress.ScreenshotDetails
 type AfterScreenshotReturnObject = Cypress.AfterScreenshotReturnObject
 type ConfigOptions = Cypress.ConfigOptions
 type PluginEvents = Cypress.PluginEvents
@@ -49,10 +48,11 @@ const kebabSnap = '-snap.png'
 const dotSnap = '.snap.png'
 const dotDiff = '.diff.png'
 
-export const cachePath = path.join(pkgDir.sync(process.cwd()) || '', 'cypress', '.snapshot-report')
+export const cachePath = path.join(pkgDir.sync() || '', 'cypress', '.snapshot-report')
+export const basePath = pkgDir.sync() || ''
 
-export function matchImageSnapshotOptions(options: SnapshotOptionsType = {}) {
-  return () => {
+export function matchImageSnapshotOptions() {
+  return (options: SnapshotOptionsType = {}) => {
     snapshotOptions = options
     snapshotRunning = true
     return null
@@ -76,9 +76,13 @@ export function matchImageSnapshotResult() {
   }
 }
 
+type MatchImageSnapshotPluginProps = {
+  path: string
+}
+
 export function matchImageSnapshotPlugin({
   path: screenshotPath
-}: ScreenshotDetails): void | AfterScreenshotReturnObject | Promise<AfterScreenshotReturnObject> {
+}: MatchImageSnapshotPluginProps): void | AfterScreenshotReturnObject | Promise<AfterScreenshotReturnObject> {
   if (!snapshotRunning) {
     return undefined
   }
@@ -121,16 +125,19 @@ export function matchImageSnapshotPlugin({
       fs.copySync(snapshotDotPath, snapshotKebabPath)
     }
 
-    snapshotResult = diffImageToSnapshot({
-      snapshotsDir,
-      diffDir,
-      receivedImageBuffer,
-      snapshotIdentifier,
-      failureThreshold,
-      failureThresholdType,
-      updateSnapshot: updateSnapshots,
-      ...options
-    })
+    snapshotResult = {
+      basePath,
+      ...diffImageToSnapshot({
+        snapshotsDir,
+        diffDir,
+        receivedImageBuffer,
+        snapshotIdentifier,
+        failureThreshold,
+        failureThresholdType,
+        updateSnapshot: updateSnapshots,
+        ...options
+      })
+    }
 
     const { pass, added, updated, diffOutputPath } = snapshotResult
 
@@ -157,9 +164,10 @@ export function matchImageSnapshotPlugin({
   return undefined
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function addMatchImageSnapshotPlugin(on: PluginEvents, config: ConfigOptions) {
   on('task', {
-    [MATCH]: matchImageSnapshotOptions(config),
+    [MATCH]: matchImageSnapshotOptions(),
     [RECORD]: matchImageSnapshotResult()
   })
   on('after:screenshot', matchImageSnapshotPlugin)

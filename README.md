@@ -2,7 +2,7 @@
 
 Cypress Image Snapshot binds [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot) image diffing logic to [Cypress.io](https://cypress.io) commands. **The goal is to catch visual regressions during integration tests.**
 
-### Installation
+## Installation
 
 ```
 npm i @wuifdesign/cypress-image-snapshot --save
@@ -10,17 +10,35 @@ npm i @wuifdesign/cypress-image-snapshot --save
 yarn add @wuifdesign/cypress-image-snapshot
 ```
 
-### Cypress GUI
+then add the following in your project's `<rootDir>/cypress/plugins/index.js`:
 
-When using `cypress open`, errors are displayed in the GUI.
+```js
+import { addMatchImageSnapshotPlugin } from '@wuifdesign/cypress-image-snapshot/dist/plugin'
 
-<img width="500px" src="https://user-images.githubusercontent.com/4060187/41942389-5a6705ae-796d-11e8-8003-fadbf7ccf43d.gif" alt="Cypress Image Snapshot in action"/>
+module.exports = (on, config) => {
+  addMatchImageSnapshotPlugin(on, config)
+}
+```
 
-### Only Run Screenshot in Headless
+and in `<rootDir>/cypress/support/commands.js` add:
 
-**For best results you should only take screenshot in headless mode. Otherwise, your client system (screen resolution) will influence the size of screenshot.**
+```js
+import { addMatchImageSnapshotCommand } from '@wuifdesign/cypress-image-snapshot/dist/command'
 
-#### Disable Screenshots for `cypress open`
+addMatchImageSnapshotCommand()
+```
+
+## Cypress GUI
+
+When using `cypress open`, errors are displayed in the GUI 
+
+**This isn't recommended as current client resolution and settings will influence the screenshots.**
+
+## Cypress Run
+
+For best results you should only take screenshot in headless mode. Otherwise, your client system (screen resolution) will influence the size of screenshot.
+
+### Disable Screenshots for `cypress open`
 
 Edit `support/commands.ts` file and add following to disable screenshots for `cypress open`.
 
@@ -35,7 +53,7 @@ Cypress.Commands.overwrite('screenshot', (originalFn, subject, name, options) =>
 
 ```
 
-#### Increase Browser Size for Headless Browsers
+### Increase Browser Size for Headless Browsers
 
 Edit `plugins/index.ts` file and add following to start headless browsers with increased resolution.
 
@@ -75,43 +93,17 @@ module.exports = (on: PluginEvents, config: PluginConfigOptions) => {
 }
 ```
 
-### Composite Image Diff
+## Composite Image Diff
 
 When an image diff fails, a composite image is constructed.
 
-<img width="500px" src="https://user-images.githubusercontent.com/4060187/41942163-72c8c20a-796c-11e8-9149-c295341864d3.png" alt="Cypress Image Snapshot diff"/>
+![Cypress Image Snapshot diff](./docs/diff.png)
 
-### Test Reporter
+## Test Reporter
 
-When using `cypress run` and `--reporter cypress-image-snapshot/reporter`, diffs are output to your terminal.
+When using `cypress run` and `--reporter @wuifdesign/cypress-image-snapshot/dist/reporter`, diffs are output to your terminal.
 
-<img width="500px" src="https://user-images.githubusercontent.com/1153686/48518011-303d4580-e836-11e8-83ed-776acae78f9f.png" alt="Cypress Image Snapshot reporter"/>
-
-## Installation
-
-Install from npm
-
-```bash
-npm install --save-dev cypress-image-snapshot
-```
-
-then add the following in your project's `<rootDir>/cypress/plugins/index.js`:
-
-```js
-import { addMatchImageSnapshotPlugin } from '@wuifdesign/cypress-image-snapshot/dist/plugin'
-
-module.exports = (on, config) => {
-  addMatchImageSnapshotPlugin(on, config)
-}
-```
-
-and in `<rootDir>/cypress/support/commands.js` add:
-
-```js
-import { addMatchImageSnapshotCommand } from '@wuifdesign/cypress-image-snapshot/dist/command'
-
-addMatchImageSnapshotCommand()
-```
+![Cypress Image Snapshot reporter](./docs/diff-reporter.png)
 
 ## Syntax
 
@@ -121,18 +113,9 @@ addMatchImageSnapshotPlugin(on, config)
 
 // addMatchImageSnapshotCommand
 addMatchImageSnapshotCommand()
-addMatchImageSnapshotCommand(commandName)
 addMatchImageSnapshotCommand(options)
-addMatchImageSnapshotCommand(commandName, options)
 
 // matchImageSnapshot
-.matchImageSnapshot()
-.matchImageSnapshot(name)
-.matchImageSnapshot(options)
-.matchImageSnapshot(name, options)
-
-// ---or---
-
 cy.matchImageSnapshot()
 cy.matchImageSnapshot(name)
 cy.matchImageSnapshot(options)
@@ -167,6 +150,8 @@ describe('Login', () => {
 
 - `customSnapshotsDir` : Path to the directory that snapshot images will be written to, defaults to `<rootDir>/cypress/snapshots`.
 - `customDiffDir`: Path to the directory that diff images will be written to, defaults to a sibling `__diff_output__` directory alongside each snapshot.
+- `snapshotSizes`: Sizes of screenshots to be generated. (default: `[[375, 667], [1280, 800]]`)
+- `clockDate`: To set the clock to a specific date to get same screenshots each time. (default: `new Date(Date.UTC(2019, 1, 1))`)
 
 Additionally, any options for [`cy.screenshot()`](https://docs.cypress.io/api/commands/screenshot.html#Arguments) and [jest-image-snapshot](https://github.com/americanexpress/jest-image-snapshot#optional-configuration) can be passed in the `options` argument to `addMatchImageSnapshotCommand` and `cy.matchImageSnapshot()`. The local options in `cy.matchImageSnapshot()` will overwrite the default options set in `addMatchImageSnapshot`.
 
@@ -174,6 +159,8 @@ For example, the default options we use in `<rootDir>/cypress/support/commands.j
 
 ```js
 addMatchImageSnapshotCommand({
+  snapshotSizes: [[375, 667], [1280, 800]], // sizes of screenshots
+  clockDate: new Date(Date.UTC(2019, 1, 1)), // setting cy.clock()
   failureThreshold: 0.03, // threshold for entire image
   failureThresholdType: 'percent', // percent of image or number of pixels
   customDiffConfig: { threshold: 0.1 }, // threshold for each pixel
@@ -193,7 +180,7 @@ Run Cypress with `--env failOnSnapshotDiff=false` in order to prevent test failu
 
 Run Cypress with `--reporter cypress-image-snapshot/reporter` in order to report snapshot diffs in your test results. This can be helpful to use with `--env failOnSnapshotDiff=false` in order to quickly view all failing snapshots and their diffs.
 
-If you using [iTerm2](https://www.iterm2.com/version3.html), the reporter will output any image diffs right in your terminal 😎.
+If you are using [iTerm2](https://www.iterm2.com/version3.html), the reporter will output any image diffs right in your terminal.
 
 ## How it works
 
@@ -201,8 +188,8 @@ We really enjoy the diffing workflow of jest-image-snapshot and wanted to have a
 
 The workflow of `cy.matchImageSnapshot()` when running Cypress is:
 
-1.  Take a screenshot with `cy.screenshot()` named according to the current test.
-2.  Check if a saved snapshot exists in `<rootDir>/cypress/snapshots` and if so diff against that snapshot.
+1.  Take screenshots with `cy.screenshot()` named according to the current test.
+2.  Check if saved snapshots exists in `<rootDir>/cypress/snapshots` and if so diff against that snapshots.
 3.  If there is a resulting diff, save it to `<rootDir>/cypress/snapshots/__diff_output__`.
 
 ## Typescript
@@ -213,7 +200,6 @@ To support typing of `cy.matchImageSnapshot()` add the type to the `tsconfig.jso
 {
   "compilerOptions": {
     "types": [
-      ...,
       "@wuifdesign/cypress-image-snapshot"
     ]
   }

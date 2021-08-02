@@ -14,11 +14,29 @@ global.Cypress = {
   config: () => '/cypress/screenshots',
   Commands: {
     add: jest.fn()
+  },
+  mocha: {
+    getRunner: () => ({
+      suite: {
+        ctx: {
+          test: ''
+        }
+      }
+    })
   }
 }
 
 global.cy = {
-  wrap: (subject) => subject
+  get: () => ({
+    then: () => Promise.resolve()
+  }),
+  log: () => null,
+  viewport: () => null,
+  clock: () => null,
+  wrap: (subject) => ({
+    ...subject,
+    as: () => null
+  })
 }
 
 const { matchImageSnapshotCommand, addMatchImageSnapshotCommand } = require('../src/command')
@@ -42,14 +60,25 @@ describe('command', () => {
 
     boundMatchImageSnapshot(subject, commandOptions)
 
-    expect(cy.task).toHaveBeenCalledWith('Matching image snapshot', {
-      screenshotsFolder: '/cypress/screenshots',
-      updateSnapshots: false,
-      options: {
-        failureThreshold: 10,
-        failureThresholdType: 'pixel'
-      }
-    })
+    expect(cy.task).toHaveBeenCalledWith(
+      'Matching image snapshot',
+      {
+        options: {
+          clockDate: new Date(Date.UTC(2019, 1, 1)),
+          failureThreshold: 10,
+          failureThresholdType: 'pixel',
+          snapshotSizes: [
+            [375, 667],
+            [1280, 800]
+          ]
+        },
+        screenshotsFolder: '/cypress/screenshots',
+        updateSnapshots: false
+      },
+      { log: false }
+    )
+
+    expect(cy.task).toBeCalledTimes(4)
   })
 
   it('should pass', () => {
@@ -68,6 +97,8 @@ describe('command', () => {
       diffOutputPath: 'cheese'
     })
 
+    global.cy.get = jest.fn().mockResolvedValue(['Error'])
+
     expect(boundMatchImageSnapshot(subject, commandOptions)).rejects.toThrowErrorMatchingSnapshot()
   })
 
@@ -76,16 +107,6 @@ describe('command', () => {
     addMatchImageSnapshotCommand()
     expect(Cypress.Commands.add).toHaveBeenCalledWith(
       'matchImageSnapshot',
-      { prevSubject: ['optional', 'element', 'window', 'document'] },
-      expect.any(Function)
-    )
-  })
-
-  it('should add command with custom name', () => {
-    Cypress.Commands.add.mockReset()
-    addMatchImageSnapshotCommand('sayCheese')
-    expect(Cypress.Commands.add).toHaveBeenCalledWith(
-      'sayCheese',
       { prevSubject: ['optional', 'element', 'window', 'document'] },
       expect.any(Function)
     )
